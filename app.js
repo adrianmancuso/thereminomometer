@@ -17,8 +17,7 @@ var xValue = 0;
 var yValue = 0;
 var rotation = 0;
 
-
-
+var duck = document.getElementById("imgLogo");
 
 
 if(window.DeviceOrientationEvent) {
@@ -33,8 +32,6 @@ if(window.DeviceOrientationEvent) {
       document.getElementById("doTiltFB").innerHTML = Math.round(yValue);
       document.getElementById("doDirection").innerHTML = Math.round(rotation);
 
-
-      var duck = document.getElementById("imgLogo");
       duck.style.webkitTransform =
         "rotate("+ xValue +"deg) rotate3d(1,0,0, "+ (yValue*-1)+"deg)";
       duck.style.MozTransform = "rotate("+ xValue +"deg)";
@@ -85,6 +82,12 @@ function makeDistortionCurve(amount) {
   }
   return curve;
 };
+
+duck.addEventListener('click', function(event) {
+  osc1.start();
+  osc2.start();
+  osc3.start();
+});
 
 distortion.curve = makeDistortionCurve(800);
 distortion.oversample = '2x';
