@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Thereminemometer</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  
+<div class="main">
+  <h2>Thereminemometer</h2>
+  <table>
+    <tr>
+      <td>Event Supported</td>
+      <td id="doEvent"></td>
+    </tr>
+    <tr>
+      <td>Tilt Left/Right [gamma]</td>
+      <td id="doTiltLR"></td>
+    </tr>
+    <tr>
+      <td>Tilt Front/Back [beta]</td>
+      <td id="doTiltFB"></td>
+    </tr>
+    <tr>
+      <td>Direction [alpha]</td>
+      <td id="doDirection"></td>
+    </tr>
+   </table>
+</div>
+
+
+<div class="container" style="perspective: 300;">
+  <img src="http://pngimg.com/uploads/duck/duck_PNG4998.png" id="imgLogo" class="logo">
+</div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
