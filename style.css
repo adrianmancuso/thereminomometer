@@ -1,12 +1,29 @@
-* {
+body {
   background-color: #262626;
-  color: lightblue;
-  font-family: monospace;
-  font-size: 100;
 }
 
 
 img {
-  width: 80vw; 
-  height: 80vh; 
+  width: 70vw; 
+  height: 70vh; 
+}
+
+.main, p, a {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1.5rem;
+}
+
+.main td, p, a {
+  color: #FFEF77;
+}
+
+h2 {
+  color: #FF5DB1;
+  background-color: #36BBCC;
+  display: inline-block;
+  font-size: 4rem;
+}
+
+p{
+  color: #FFEF77;
 }

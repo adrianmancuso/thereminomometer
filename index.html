@@ -2,38 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Thereminemometer</title>
+  <title>Thereminometer</title>
+  <link href="https://fonts.googleapis.com/css?family=Press+Start+2P|VT323" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
   
-<div class="main">
-  <h2>Thereminemometer</h2>
-  <table>
-    <tr>
-      <td>Event Supported</td>
-      <td id="doEvent"></td>
-    </tr>
-    <tr>
-      <td>Tilt Left/Right [gamma]</td>
-      <td id="doTiltLR"></td>
-    </tr>
-    <tr>
-      <td>Tilt Front/Back [beta]</td>
-      <td id="doTiltFB"></td>
-    </tr>
-    <tr>
-      <td>Direction [alpha]</td>
-      <td id="doDirection"></td>
-    </tr>
-   </table>
-</div>
+  <div class="main">
+    <h2>Thereminometer</h2>
+    <table>
+      <tr>
+        <td>SOUND_MUST_BE_ON!</td>
+        <td id="doEvent"></td>
+      </tr>
+      <tr>
+        <td>Tilt Left/Right (square freq) [gamma]</td>
+        <td id="doTiltLR"></td>
+      </tr>
+      <tr>
+        <td>Tilt Front/Back (sine freq) [beta]</td>
+        <td id="doTiltFB"></td>
+      </tr>
+      <tr>
+        <td>Rotation (filter freq) [alpha]</td>
+        <td id="doDirection"></td>
+      </tr>
+     </table>
+  </div>
 
 
-<div class="container" style="perspective: 300;">
-  <img src="http://pngimg.com/uploads/duck/duck_PNG4998.png" id="imgLogo" class="logo">
-</div>
-
+  <div class="container" style="perspective: 300;">
+    <img src="./duck.png" id="imgLogo" class="logo">
+  </div>
+    <p>I'm sorry. <a href="https://github.com/adrianmancuso/thereminomometer">Github</a></p>
   <script src="./app.js"></script>
 </body>
 </html>

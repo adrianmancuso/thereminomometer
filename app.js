@@ -34,11 +34,11 @@ if(window.DeviceOrientationEvent) {
       document.getElementById("doDirection").innerHTML = Math.round(rotation);
 
 
-      var logo = document.getElementById("imgLogo");
-      logo.style.webkitTransform =
+      var duck = document.getElementById("imgLogo");
+      duck.style.webkitTransform =
         "rotate("+ xValue +"deg) rotate3d(1,0,0, "+ (yValue*-1)+"deg)";
-      logo.style.MozTransform = "rotate("+ xValue +"deg)";
-      logo.style.transform =
+      duck.style.MozTransform = "rotate("+ xValue +"deg)";
+      duck.style.transform =
         "rotate("+ xValue +"deg) rotate3d(1,0,0, "+ (yValue*-1)+"deg)";
 
 
@@ -54,19 +54,44 @@ if(window.DeviceOrientationEvent) {
       distortion.connect(audioCtx.destination);
       osc2.start();
 
-      osc3.type = 'triangle';
+      osc3.type = 'sawtooth';
       osc3.frequency.value = freqValue;
       osc3.connect(distortion);
-      distortion.connect(audioCtx.destination);
+      distortion.connect(gainNode);
+      gainNode.connect(biquadFilter);
+      biquadFilter.connect(convolver);
+      convolver.connect(audioCtx.destination);
       osc3.start();
+
+      biquadFilter.type = "lowpass";
+      biquadFilter.frequency.value = 1000;
+      biquadFilter.gain.value = 25;
 
   }, true);
 } else {
-  alert("Sorry, your browser doesn't support Device Orientation");
+  alert("Sucked in, your browser doesn't support Device Orientation");
 }
+
+function makeDistortionCurve(amount) {
+  var k = typeof amount === 'number' ? amount : 50,
+    n_samples = 44100,
+    curve = new Float32Array(n_samples),
+    deg = Math.PI / 180,
+    i = 0,
+    x;
+  for ( ; i < n_samples; ++i ) {
+    x = i * 2 / n_samples - 1;
+    curve[i] = ( 3 + k ) * x * 20 * deg / ( Math.PI + k * Math.abs(x) );
+  }
+  return curve;
+};
+
+distortion.curve = makeDistortionCurve(800);
+distortion.oversample = '2x';
 
 window.addEventListener("deviceorientation", function(event) {
   osc1.frequency.value = freqValue * (xValue*0.2);
+  biquadFilter.frequency.value = 1000 * (xValue/0.1);
   osc2.frequency.value = freqValue * (yValue*0.2);
-  osc3.frequency.value = freqValue * (rotation*0.2);
+  osc3.frequency.value = freqValue * (rotation/0.2);
 });
