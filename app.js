@@ -1,11 +1,12 @@
 // create audio api context
 var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-// create Osc node
+// create 3 x osc node
 var osc1 = audioCtx.createOscillator();
 var osc2 = audioCtx.createOscillator();
 var osc3 = audioCtx.createOscillator();
 
+// marshall stack / FX
 var analyser = audioCtx.createAnalyser();
 var distortion = audioCtx.createWaveShaper();
 var gainNode = audioCtx.createGain();
@@ -61,7 +62,7 @@ if(window.DeviceOrientationEvent) {
       osc3.start();
 
       biquadFilter.type = "lowpass";
-      biquadFilter.frequency.value = 1000;
+      biquadFilter.frequency.value = 300;
       biquadFilter.gain.value = 25;
 
   }, true);
@@ -94,7 +95,7 @@ distortion.oversample = '2x';
 
 window.addEventListener("deviceorientation", function(event) {
   osc1.frequency.value = freqValue * (xValue*0.2);
-  biquadFilter.frequency.value = 1000 * (xValue/0.1);
+  biquadFilter.frequency.value = 500 * (xValue/0.1);
   osc2.frequency.value = freqValue * (yValue*0.2);
   osc3.frequency.value = freqValue * (rotation/0.2);
 });
