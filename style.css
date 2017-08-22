@@ -16,6 +16,7 @@ img {
 
 .main td, p, a {
   color: #FFEF77;
+  animation: pulse 5s infinite;
 }
 
 h2 {
@@ -24,6 +25,25 @@ h2 {
   display: inline-block;
   font-size: 2rem;
   margin-bottom: 0;
+  animation: pulse 8s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    color: #FF5DB1;
+  }
+  25% {
+    color: #9277FF;
+  }
+  50% {
+    color: #FFEF77;
+  }
+  75% {
+    color: #5841B2;
+  }
+  100% {
+    color: #FF5DB1;
+  }
 }
 
 p{

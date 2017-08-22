@@ -73,7 +73,7 @@ if(window.DeviceOrientationEvent) {
 function makeDistortionCurve(amount) {
   var k = typeof amount === 'number' ? amount : 50,
     n_samples = 44100,
-    curve = new Float32Array(n_samples),
+    curve = new (n_samples),
     deg = Math.PI / 180,
     i = 0,
     x;
