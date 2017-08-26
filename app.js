@@ -13,7 +13,7 @@ var gainNode = audioCtx.createGain();
 var biquadFilter = audioCtx.createBiquadFilter();
 var convolver = audioCtx.createConvolver();
 
-var freqValue = 100;
+var freqValue = 50;
 var xValue = 0;
 var yValue = 0;
 var rotation = 0;
@@ -52,18 +52,15 @@ if(window.DeviceOrientationEvent) {
       distortion.connect(audioCtx.destination);
       osc2.start();
 
-      osc3.type = 'sawtooth';
+      osc3.type = 'triangle';
       osc3.frequency.value = freqValue;
       osc3.connect(distortion);
       distortion.connect(gainNode);
-      gainNode.connect(biquadFilter);
-      biquadFilter.connect(convolver);
+      gainNode.connect(convolver);
       convolver.connect(audioCtx.destination);
       osc3.start();
 
-      biquadFilter.type = "hipass";
-      biquadFilter.frequency.value = 600;
-      biquadFilter.gain.value = 25;
+
 
   }, true);
 } else {
@@ -94,8 +91,7 @@ distortion.curve = makeDistortionCurve(800);
 distortion.oversample = '2x';
 
 window.addEventListener("deviceorientation", function(event) {
-  osc1.detune.value = freqValue * (xValue*0.2);
-  biquadFilter.frequency.value = 50 * (xValue/4.7);
-  osc2.detune.value = freqValue * (yValue*0.2);
-  osc3.detune.value = freqValue * (rotation/0.2);
+  osc1.detune.value = freqValue * (xValue*0.1);
+  osc2.detune.value = freqValue * (yValue*0.1);
+  osc3.detune.value = freqValue * (rotation/0.1);
 });
