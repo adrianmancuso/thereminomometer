@@ -61,8 +61,8 @@ if(window.DeviceOrientationEvent) {
       convolver.connect(audioCtx.destination);
       osc3.start();
 
-      biquadFilter.type = "lowpass";
-      biquadFilter.frequency.value = 300;
+      biquadFilter.type = "hipass";
+      biquadFilter.frequency.value = 600;
       biquadFilter.gain.value = 25;
 
   }, true);
@@ -94,8 +94,8 @@ distortion.curve = makeDistortionCurve(800);
 distortion.oversample = '2x';
 
 window.addEventListener("deviceorientation", function(event) {
-  osc1.frequency.value = freqValue * (xValue*0.2);
-  biquadFilter.frequency.value = 500 * (xValue/0.1);
-  osc2.frequency.value = freqValue * (yValue*0.2);
-  osc3.frequency.value = freqValue * (rotation/0.2);
+  osc1.detune.value = freqValue * (xValue*0.2);
+  biquadFilter.frequency.value = 50 * (xValue/4.7);
+  osc2.detune.value = freqValue * (yValue*0.2);
+  osc3.detune.value = freqValue * (rotation/0.2);
 });
