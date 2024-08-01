@@ -90,9 +90,6 @@ function makeDistortionCurve(amount) {
 
 duck.addEventListener('click', function (event) {
     permission();
-    osc1.start();
-    osc2.start();
-    osc3.start();
 });
 
 distortion.curve = makeDistortionCurve(800);
