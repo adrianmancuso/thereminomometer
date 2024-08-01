@@ -49,6 +49,7 @@ function permission() {
         DeviceMotionEvent.requestPermission()
             .then(response => {
                 if (response == "granted") {
+                  startOscillators()
                     window.addEventListener("deviceorientation", function (event) {
                         xValue = Math.round(event.gamma);
                         yValue = Math.round(event.beta);
@@ -89,7 +90,6 @@ function makeDistortionCurve(amount) {
 
 duck.addEventListener('click', function (event) {
     permission();
-    startOscillators();
 });
 
 distortion.curve = makeDistortionCurve(800);
