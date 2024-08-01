@@ -20,61 +20,58 @@ var rotation = 0;
 
 var duck = document.getElementById("imgLogo");
 
-if ( location.protocol != "https:" ) {
-  location.href = "https:" + window.location.href.substring( window.location.protocol.length );
-  }
-  function permission () {
-      if ( typeof( DeviceMotionEvent ) !== "undefined" && typeof( DeviceMotionEvent.requestPermission ) === "function" ) {
-          DeviceMotionEvent.requestPermission()
-              .then( response => {
-              if ( response == "granted" ) {
-                window.addEventListener("deviceorientation", function(event) {
+if (location.protocol != "https:") {
+  location.href = "https:" + window.location.href.substring(window.location.protocol.length);
+}
 
-                  xValue = Math.round(event.gamma);
-                  yValue = Math.round(event.beta);
-                  rotation = Math.round(event.alpha);
+function startOscillators() {
+    osc1.type = 'square';
+    osc2.type = 'sine';
+    osc3.type = 'triangle';
 
-                  document.getElementById("doTiltLR").innerHTML = Math.round(xValue);
-                  document.getElementById("doTiltFB").innerHTML = Math.round(yValue);
-                  document.getElementById("doDirection").innerHTML = Math.round(rotation);
+    osc1.frequency.value = freqValue;
+    osc2.frequency.value = freqValue;
+    osc3.frequency.value = freqValue;
 
-                  duck.style.webkitTransform =
-                    "rotate("+ xValue +"deg) rotate3d(1,0,0, "+ (yValue*-1)+"deg)";
-                  duck.style.MozTransform = "rotate("+ xValue +"deg)";
-                  duck.style.transform =
-                    "rotate("+ xValue +"deg) rotate3d(1,0,0, "+ (yValue*-1)+"deg)";
+    osc1.connect(distortion);
+    osc2.connect(distortion);
+    osc3.connect(gainNode);
+    gainNode.connect(convolver);
+    convolver.connect(audioCtx.destination);
 
+    osc1.start();
+    osc2.start();
+    osc3.start();
+}
 
-                  osc1.type = 'square';
-                  osc1.frequency.value = freqValue;
-                  osc1.connect(distortion);
-                  distortion.connect(audioCtx.destination);
-                  osc1.start();
+function permission() {
+    if (typeof (DeviceMotionEvent) !== "undefined" && typeof (DeviceMotionEvent.requestPermission) === "function") {
+        DeviceMotionEvent.requestPermission()
+            .then(response => {
+                if (response == "granted") {
+                    window.addEventListener("deviceorientation", function (event) {
+                        xValue = Math.round(event.gamma);
+                        yValue = Math.round(event.beta);
+                        rotation = Math.round(event.alpha);
 
-                  osc2.type = 'sine';
-                  osc2.frequency.value = freqValue;
-                  osc2.connect(distortion);
-                  distortion.connect(audioCtx.destination);
-                  osc2.start();
+                        document.getElementById("doTiltLR").innerHTML = Math.round(xValue);
+                        document.getElementById("doTiltFB").innerHTML = Math.round(yValue);
+                        document.getElementById("doDirection").innerHTML = Math.round(rotation);
 
-                  osc3.type = 'triangle';
-                  osc3.frequency.value = freqValue;
-                  osc3.connect(distortion);
-                  distortion.connect(gainNode);
-                  gainNode.connect(convolver);
-                  convolver.connect(audioCtx.destination);
-                  osc3.start();
+                        duck.style.transform =
+                            "rotate(" + xValue + "deg) rotate3d(1,0,0, " + (yValue * -1) + "deg)";
 
-
-
-              }, true);
-              }
-          })
-              .catch( console.error )
-      } else {
-          alert( "DeviceMotionEvent is not defined" );
-      }
-  }
+                        osc1.detune.value = freqValue * (xValue * 0.1);
+                        osc2.detune.value = freqValue * (yValue * 0.1);
+                        osc3.detune.value = freqValue * (rotation * 0.1);
+                    }, true);
+                }
+            })
+            .catch(console.error);
+    } else {
+        alert("DeviceMotionEvent is not defined");
+    }
+}
 
 function makeDistortionCurve(amount) {
     var k = typeof amount === 'number' ? amount : 50,
@@ -97,9 +94,3 @@ duck.addEventListener('click', function (event) {
 
 distortion.curve = makeDistortionCurve(800);
 distortion.oversample = '2x';
-
-window.addEventListener("deviceorientation", function(event) {
-  osc1.detune.value = freqValue * (xValue*0.1);
-  osc2.detune.value = freqValue * (yValue*0.1);
-  osc3.detune.value = freqValue * (rotation/0.1);
-});
