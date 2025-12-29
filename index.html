@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Thereminometer</title>
   <link href="https://fonts.googleapis.com/css?family=Press+Start+2P|VT323" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=2">
+  <link rel="stylesheet" href="./style.css?v=6">
 </head>
 <body>
 
@@ -20,8 +20,8 @@
       <input type="range" id="distortionSlider" min="0" max="800" value="400" step="10">
     </div>
     <div class="control-item">
-      <span class="control-label">OVERSAMPLE: <span id="oversampleValue">2x</span></span>
-      <input type="range" id="oversampleSlider" min="0" max="2" value="1" step="1">
+      <span class="control-label">BIT DEPTH: <span id="bitDepthValue">16-bit</span></span>
+      <input type="range" id="bitDepthSlider" min="1" max="16" value="16" step="1">
     </div>
     <div class="control-item">
       <span class="control-label">FREQUENCY RANGE:</span>
@@ -29,6 +29,14 @@
         <a href="#" class="freq-button active" data-range="low">LOW</a>
         <a href="#" class="freq-button" data-range="mid">LOW+MID</a>
         <a href="#" class="freq-button" data-range="full">FULL</a>
+      </div>
+    </div>
+    <div class="control-item">
+      <span class="control-label">MODE:</span>
+      <div class="mode-buttons">
+        <a href="#" class="mode-button active" data-mode="noise">NOISE</a>
+        <a href="#" class="mode-button" data-mode="dream">DREAM</a>
+        <a href="#" class="mode-button" data-mode="glitch">GLITCH</a>
       </div>
     </div>
   </div>
