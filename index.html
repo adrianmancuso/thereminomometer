@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Thereminometer</title>
   <link href="https://fonts.googleapis.com/css?family=Press+Start+2P|VT323" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=6">
+  <link rel="stylesheet" href="./style.css?v=8">
 </head>
 <body>
 
@@ -16,12 +16,16 @@
       <a href="#" id="addOscillators" class="control-link">+ ADD MORE OSCILLATORS</a>
     </div>
     <div class="control-item">
-      <span class="control-label">DISTORTION: <span id="distortionValue">400</span></span>
-      <input type="range" id="distortionSlider" min="0" max="800" value="400" step="10">
+      <span class="control-label">NOISE: <span id="distortionValue">50%</span></span>
+      <input type="range" id="distortionSlider" min="0" max="100" value="50" step="1">
     </div>
     <div class="control-item">
-      <span class="control-label">BIT DEPTH: <span id="bitDepthValue">16-bit</span></span>
-      <input type="range" id="bitDepthSlider" min="1" max="16" value="16" step="1">
+      <span class="control-label">DEGRADATION: <span id="bitDepthValue">0%</span></span>
+      <input type="range" id="bitDepthSlider" min="0" max="100" value="0" step="1">
+    </div>
+    <div class="control-item">
+      <span class="control-label">REVERB: <span id="reverbValue">0%</span></span>
+      <input type="range" id="reverbSlider" min="0" max="100" value="0" step="1">
     </div>
     <div class="control-item">
       <span class="control-label">FREQUENCY RANGE:</span>

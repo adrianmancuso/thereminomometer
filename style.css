@@ -1,5 +1,13 @@
+:root {
+  --primary-color: #FF5DB1;
+  --secondary-color: #36BBCC;
+  --accent-color: #FFEF77;
+  --bg-color: #262626;
+}
+
 body {
-  background-color: #262626;
+  background-color: var(--bg-color);
+  transition: background-color 0.5s ease;
 }
 
 
@@ -15,39 +23,42 @@ img {
 }
 
 .main td, p, a {
-  color: #FFEF77;
+  color: var(--accent-color);
   animation: pulse 5s infinite;
+  transition: color 0.5s ease;
 }
 
 h2 {
-  color: #FF5DB1;
-  background-color: #36BBCC;
+  color: var(--primary-color);
+  background-color: var(--secondary-color);
   display: inline-block;
   font-size: 2rem;
   margin-bottom: 0;
   animation: pulse 8s infinite;
+  transition: color 0.5s ease, background-color 0.5s ease;
 }
 
 @keyframes pulse {
   0% {
-    color: #FF5DB1;
+    color: var(--primary-color);
   }
   25% {
-    color: #9277FF;
+    color: var(--secondary-color);
   }
   50% {
-    color: #FFEF77;
+    color: var(--accent-color);
   }
   75% {
-    color: #5841B2;
+    color: var(--secondary-color);
   }
   100% {
-    color: #FF5DB1;
+    color: var(--primary-color);
   }
 }
 
 p{
-  color: #FFEF77;
+  color: var(--accent-color);
+  transition: color 0.5s ease;
   position: fixed;
   bottom: 0;
 }
@@ -73,16 +84,16 @@ p{
 .control-link {
   font-family: 'Press Start 2P', monospace;
   font-size: 1.2rem;
-  color: #FFEF77;
+  color: var(--accent-color);
   text-decoration: none;
   animation: pulse 5s infinite;
+  transition: color 0.3s ease;
   cursor: pointer;
-  transition: color 0.3s;
   display: inline-block;
 }
 
 .control-link:hover {
-  color: #FF5DB1;
+  color: var(--primary-color);
 }
 
 .control-item input[type="range"] {
@@ -92,15 +103,17 @@ p{
 .control-label {
   font-family: 'Press Start 2P', monospace !important;
   font-size: 0.9rem !important;
-  color: #FFEF77 !important;
+  color: var(--accent-color) !important;
   animation: pulse 5s infinite !important;
   display: block !important;
+  transition: color 0.5s ease !important;
   margin-bottom: 10px !important;
   text-align: center !important;
 }
 
 .control-label span {
-  color: #9277FF !important;
+  color: var(--secondary-color) !important;
+  transition: color 0.5s ease !important;
 }
 
 .control-item input[type="range"] {
@@ -207,11 +220,81 @@ p{
   box-shadow: 0 0 12px #36BBCC;
 }
 
+/* Mode buttons styling */
+.mode-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.mode-button {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.7rem;
+  background: #262626;
+  padding: 10px 18px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-block;
+  flex: 1;
+  min-width: 80px;
+}
+
+.mode-button[data-mode="noise"] {
+  color: #FFEF77;
+  border: 2px solid #FFEF77;
+}
+
+.mode-button[data-mode="noise"]:hover {
+  box-shadow: 0 0 8px #FFEF77;
+}
+
+.mode-button[data-mode="noise"].active {
+  color: #262626;
+  background: #FFEF77;
+  border-color: #FFEF77;
+  box-shadow: 0 0 12px #FFEF77;
+}
+
+.mode-button[data-mode="dream"] {
+  color: #9277FF;
+  border: 2px solid #9277FF;
+}
+
+.mode-button[data-mode="dream"]:hover {
+  box-shadow: 0 0 8px #9277FF;
+}
+
+.mode-button[data-mode="dream"].active {
+  color: #262626;
+  background: #9277FF;
+  border-color: #9277FF;
+  box-shadow: 0 0 12px #9277FF;
+}
+
+.mode-button[data-mode="glitch"] {
+  color: #00FF00;
+  border: 2px solid #00FF00;
+}
+
+.mode-button[data-mode="glitch"]:hover {
+  box-shadow: 0 0 8px #00FF00;
+}
+
+.mode-button[data-mode="glitch"].active {
+  color: #262626;
+  background: #00FF00;
+  border-color: #00FF00;
+  box-shadow: 0 0 12px #00FF00;
+}
+
 .status-text {
   font-family: 'Press Start 2P', monospace;
   font-size: 0.9rem;
-  color: #FFEF77;
+  color: var(--accent-color);
   position: static !important;
   margin: 15px 0;
+  transition: color 0.5s ease;
   animation: pulse 5s infinite;
 }

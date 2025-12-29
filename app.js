@@ -13,6 +13,11 @@ let rotation = 0;
 let compressor = null;
 let foldingDistortion = null;
 
+// Master reverb effect
+let masterReverb = null;
+let reverbWet = null;
+let reverbDry = null;
+
 // Dream mode effects
 let highpassFilter = null;
 let dreamReverb = null;
@@ -24,6 +29,11 @@ let notchFilter = null;
 let ringModOsc = null;
 let ringModGain = null;
 let bitcrusher = null;
+
+// Lo-fi degradation effect (sample rate reduction + noise)
+let sampleRateReducer = null;
+let lofiNoise = null;
+let lofiNoiseGain = null;
 
 // Granular synthesis for glitch mode
 let grainBuffer = null;
@@ -42,20 +52,48 @@ const distortionSlider = document.getElementById("distortionSlider");
 const distortionValueDisplay = document.getElementById("distortionValue");
 const bitDepthSlider = document.getElementById("bitDepthSlider");
 const bitDepthValueDisplay = document.getElementById("bitDepthValue");
+const reverbSlider = document.getElementById("reverbSlider");
+const reverbValueDisplay = document.getElementById("reverbValue");
 
 if (location.protocol != "https:") {
   location.href = "https:" + window.location.href.substring(window.location.protocol.length);
 }
 
-function makeDistortionCurve(amount) {
-    const k = typeof amount === 'number' ? amount : 50;
+function makeNoiseCurve(noisePercent) {
+    // noisePercent: 0-100, where 0 is clean and 100 is maximum noise/distortion
     const n_samples = 44100;
     const curve = new Float32Array(n_samples);
-    const deg = Math.PI / 180;
 
+    // Convert percentage to normalized amount (0 to 1)
+    const amount = noisePercent / 100;
+
+    // Combine multiple distortion techniques based on amount
     for (let i = 0; i < n_samples; ++i) {
-        const x = i * 2 / n_samples - 1;
-        curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
+        let x = i * 2 / n_samples - 1;
+
+        // Add hard clipping (increases with amount)
+        const clipThreshold = 1 - (amount * 0.8); // 1.0 to 0.2
+        if (Math.abs(x) > clipThreshold) {
+            x = Math.sign(x) * clipThreshold;
+        }
+
+        // Add waveshaping distortion
+        const k = amount * 100; // 0 to 100
+        const deg = Math.PI / 180;
+        x = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
+
+        // Add asymmetric distortion (more extreme at higher amounts)
+        if (amount > 0.5) {
+            const asymmetry = (amount - 0.5) * 2; // 0 to 1
+            x = x + asymmetry * x * x * Math.sign(x) * 0.5;
+        }
+
+        // Add random noise (increases dramatically at high amounts)
+        const noiseAmount = amount * amount * 0.3; // Exponential curve
+        x += (Math.random() * 2 - 1) * noiseAmount;
+
+        // Final clipping
+        curve[i] = Math.max(-1, Math.min(1, x));
     }
     return curve;
 }
@@ -75,15 +113,30 @@ function makeFoldingCurve() {
     return curve;
 }
 
-function makeBitcrushCurve(bits) {
+function makeLofiCurve(crushAmount) {
+    // crushAmount: 1 (clean) to 16 (super crushed)
     const n_samples = 44100;
     const curve = new Float32Array(n_samples);
+
+    // Calculate bit depth based on crush amount (16-bit at 1, 1-bit at 16)
+    const bits = 17 - crushAmount;
     const levels = Math.pow(2, bits);
 
+    // Calculate noise/dither amount (0 at clean, high at crushed)
+    const noiseAmount = (crushAmount - 1) / 15; // 0 to 1 range
+
     for (let i = 0; i < n_samples; ++i) {
-        const x = i * 2 / n_samples - 1;
+        let x = i * 2 / n_samples - 1;
+
+        // Add dithering noise (increases with crush amount)
+        const dither = (Math.random() * 2 - 1) * noiseAmount * 0.1;
+        x += dither;
+
         // Quantize to specific bit depth
-        curve[i] = Math.round(x * levels) / levels;
+        x = Math.round(x * levels) / levels;
+
+        // Clamp to valid range
+        curve[i] = Math.max(-1, Math.min(1, x));
     }
     return curve;
 }
@@ -226,24 +279,42 @@ function startOscillators() {
 
         masterGain = audioCtx.createGain();
 
-        // Create compressor (used by all modes)
+        // Create compressor (used by all modes) - extreme settings
         compressor = audioCtx.createDynamicsCompressor();
-        compressor.threshold.value = -20;
-        compressor.knee.value = 10;
-        compressor.ratio.value = 4;
-        compressor.attack.value = 0.003;
-        compressor.release.value = 0.25;
+        compressor.threshold.value = -20;  // Lower threshold to compress more
+        compressor.knee.value = 5;          // Hard knee for aggressive compression
+        compressor.ratio.value = 20;        // Maximum ratio for extreme squashing
+        compressor.attack.value = 0.7;    // Very fast attack
+        compressor.release.value = 0.1;     // Shorter release for pumping effect
 
-        // NOISE MODE: Folding distortion
+        // Create master reverb (used by all modes)
+        masterReverb = audioCtx.createConvolver();
+        const masterReverbLength = audioCtx.sampleRate * 3; // 3 second reverb
+        const masterReverbBuffer = audioCtx.createBuffer(2, masterReverbLength, audioCtx.sampleRate);
+        for (let channel = 0; channel < 2; channel++) {
+            const channelData = masterReverbBuffer.getChannelData(channel);
+            for (let i = 0; i < masterReverbLength; i++) {
+                channelData[i] = (Math.random() * 2 - 1) * (1 - i / masterReverbLength) ** 2;
+            }
+        }
+        masterReverb.buffer = masterReverbBuffer;
+
+        // Create wet/dry gains for reverb mix
+        reverbWet = audioCtx.createGain();
+        reverbWet.gain.value = 0; // Start at 0% wet
+        reverbDry = audioCtx.createGain();
+        reverbDry.gain.value = 1; // Start at 100% dry
+
+        // NOISE MODE: Noise/distortion effect
         foldingDistortion = audioCtx.createWaveShaper();
-        foldingDistortion.curve = makeFoldingCurve();
+        foldingDistortion.curve = makeNoiseCurve(50); // Start at 50%
         foldingDistortion.oversample = '4x';
 
         // DREAM MODE: Highpass + Reverb + Stereo Widener
         highpassFilter = audioCtx.createBiquadFilter();
         highpassFilter.type = 'highpass';
         highpassFilter.frequency.value = 100;
-        highpassFilter.Q.value = 0.9;
+        highpassFilter.Q.value = 1;
 
         dreamReverb = audioCtx.createConvolver();
         const reverbLength = audioCtx.sampleRate * 5; // 3 second reverb
@@ -265,19 +336,55 @@ function startOscillators() {
         notchFilter = audioCtx.createBiquadFilter();
         notchFilter.type = 'notch';
         notchFilter.frequency.value = 1000;
-        notchFilter.Q.value = 10;
+        notchFilter.Q.value = 1;
 
         ringModOsc = audioCtx.createOscillator();
-        ringModOsc.frequency.value = 800;
+        ringModOsc.frequency.value = 200;
         ringModOsc.type = 'sine';
         ringModOsc.start();
 
         ringModGain = audioCtx.createGain();
         ringModGain.gain.value = 0;
 
-        // Global bitcrusher (used by all modes)
+        // Global lo-fi degradation (used by all modes)
+        // Bitcrusher with combined effects
         bitcrusher = audioCtx.createWaveShaper();
-        bitcrusher.curve = makeBitcrushCurve(16); // Start at 16-bit (no crushing)
+        bitcrusher.curve = makeLofiCurve(1); // Start at 1 (clean, 16-bit)
+
+        // Sample rate reducer using ScriptProcessor
+        let lastSample = 0;
+        let sampleCounter = 0;
+        let sampleHold = 1; // Start at 1 (no reduction)
+
+        sampleRateReducer = audioCtx.createScriptProcessor(4096, 1, 1);
+        sampleRateReducer.onaudioprocess = (e) => {
+            const input = e.inputBuffer.getChannelData(0);
+            const output = e.outputBuffer.getChannelData(0);
+
+            for (let i = 0; i < input.length; i++) {
+                sampleCounter++;
+                if (sampleCounter >= sampleHold) {
+                    lastSample = input[i];
+                    sampleCounter = 0;
+                }
+                output[i] = lastSample;
+            }
+        };
+
+        // Noise generator for lo-fi dithering
+        lofiNoise = audioCtx.createBufferSource();
+        const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
+        const noiseData = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < noiseData.length; i++) {
+            noiseData[i] = Math.random() * 2 - 1;
+        }
+        lofiNoise.buffer = noiseBuffer;
+        lofiNoise.loop = true;
+        lofiNoise.start();
+
+        lofiNoiseGain = audioCtx.createGain();
+        lofiNoiseGain.gain.value = 0; // Start with no noise
+        lofiNoise.connect(lofiNoiseGain);
 
         // Set up grain recording buffer (1 second circular buffer)
         grainBuffer = audioCtx.createBuffer(3, audioCtx.sampleRate * 3, audioCtx.sampleRate);
@@ -335,9 +442,6 @@ function startOscillators() {
 }
 
 function permission() {
-    console.log("Permission function called");
-    console.log("DeviceOrientationEvent:", typeof DeviceOrientationEvent);
-    console.log("requestPermission:", typeof DeviceOrientationEvent.requestPermission);
 
     if (typeof (DeviceOrientationEvent) !== "undefined" && typeof (DeviceOrientationEvent.requestPermission) === "function") {
         console.log("Requesting iOS permission...");
@@ -471,22 +575,69 @@ addButton.addEventListener('click', (e) => {
 });
 
 distortionSlider.addEventListener('input', function() {
-    const distortionAmount = parseInt(this.value);
-    distortionValueDisplay.textContent = distortionAmount;
+    const noisePercent = parseInt(this.value);
+    distortionValueDisplay.textContent = noisePercent + "%";
 
-    if (distortion) {
-        distortion.curve = makeDistortionCurve(distortionAmount);
-        console.log("Distortion updated to:", distortionAmount);
+    if (foldingDistortion) {
+        foldingDistortion.curve = makeNoiseCurve(noisePercent);
+        console.log("Noise updated to:", noisePercent + "%");
     }
 });
 
 bitDepthSlider.addEventListener('input', function() {
-    const bits = parseInt(this.value);
-    bitDepthValueDisplay.textContent = bits + "-bit";
+    const degradationPercent = parseInt(this.value);
+    bitDepthValueDisplay.textContent = degradationPercent + "%";
 
-    if (bitcrusher) {
-        bitcrusher.curve = makeBitcrushCurve(bits);
-        console.log("Bit depth updated to:", bits);
+    if (bitcrusher && sampleRateReducer && lofiNoiseGain) {
+        // Convert percentage to crush amount (0% = 1, 100% = 16)
+        const crushAmount = 1 + Math.floor(degradationPercent / 100 * 15);
+
+        // Update bitcrusher curve with dithering
+        bitcrusher.curve = makeLofiCurve(crushAmount);
+
+        // Calculate sample rate reduction
+        // At 0%: sampleHold = 1 (44100 Hz, no reduction)
+        // At 100%: sampleHold = 45 (~980 Hz, maximum reduction)
+        const sampleHold = Math.floor(1 + (crushAmount - 1) * 2.93);
+
+        // Update the sample hold value in the processor
+        sampleRateReducer.onaudioprocess = function(e) {
+            const input = e.inputBuffer.getChannelData(0);
+            const output = e.outputBuffer.getChannelData(0);
+            let lastSample = 0;
+            let counter = 0;
+
+            for (let i = 0; i < input.length; i++) {
+                counter++;
+                if (counter >= sampleHold) {
+                    lastSample = input[i];
+                    counter = 0;
+                }
+                output[i] = lastSample;
+            }
+        };
+
+        // Calculate noise amount (0 to 0.15 at maximum degradation)
+        const noiseAmount = degradationPercent / 100 * 0.15;
+        lofiNoiseGain.gain.value = noiseAmount;
+
+        const bits = 17 - crushAmount;
+        console.log(`Degradation: ${degradationPercent}% (${bits}-bit, sample hold: ${sampleHold}, noise: ${noiseAmount.toFixed(3)})`);
+    }
+});
+
+reverbSlider.addEventListener('input', function() {
+    const reverbAmount = parseInt(this.value);
+    reverbValueDisplay.textContent = reverbAmount + "%";
+
+    if (reverbWet && reverbDry) {
+        // Convert percentage to 0-1 range
+        const wetGain = reverbAmount / 100;
+        const dryGain = 1 - wetGain;
+
+        reverbWet.gain.value = wetGain;
+        reverbDry.gain.value = dryGain;
+        console.log("Reverb updated to:", reverbAmount + "% (wet:", wetGain, "dry:", dryGain + ")");
     }
 });
 
@@ -505,47 +656,85 @@ function rewireAudioGraph() {
         notchFilter.disconnect();
         ringModGain.disconnect();
         bitcrusher.disconnect();
+        sampleRateReducer.disconnect();
+        lofiNoiseGain.disconnect();
+        reverbDry.disconnect();
+        reverbWet.disconnect();
+        masterReverb.disconnect();
     } catch (e) {
         // Ignore disconnect errors on first run
     }
 
     if (currentMode === 'noise') {
-        // NOISE MODE: masterGain → folding distortion → bitcrusher → compressor → destination
+        // NOISE MODE: masterGain → folding distortion → sample rate reducer → bitcrusher (+noise) → reverb → compressor → destination
         masterGain.connect(foldingDistortion);
-        foldingDistortion.connect(bitcrusher);
-        bitcrusher.connect(compressor);
+        foldingDistortion.connect(sampleRateReducer);
+        sampleRateReducer.connect(bitcrusher);
+
+        // Add lo-fi noise to the bitcrusher output
+        lofiNoiseGain.connect(bitcrusher);
+
+        // Reverb wet/dry split
+        bitcrusher.connect(reverbDry);
+        bitcrusher.connect(masterReverb);
+        masterReverb.connect(reverbWet);
+
+        reverbDry.connect(compressor);
+        reverbWet.connect(compressor);
         compressor.connect(audioCtx.destination);
 
         masterGain.gain.value = 1.0;
         console.log("Switched to NOISE mode");
 
     } else if (currentMode === 'dream') {
-        // DREAM MODE: masterGain → highpass → reverb → bitcrusher → compressor → destination
+        // DREAM MODE: masterGain → highpass → dreamReverb → sample rate reducer → bitcrusher (+noise) → reverb → compressor → destination
         // with stereo widening
         masterGain.connect(highpassFilter);
         highpassFilter.connect(dreamReverb);
 
         // Stereo widening: split signal, delay one channel slightly
         dreamReverb.connect(stereoDelay);
-        stereoDelay.connect(bitcrusher);
-        dreamReverb.connect(bitcrusher); // Dry signal
+        stereoDelay.connect(sampleRateReducer);
+        dreamReverb.connect(sampleRateReducer); // Dry signal
 
-        bitcrusher.connect(compressor);
+        sampleRateReducer.connect(bitcrusher);
+
+        // Add lo-fi noise to the bitcrusher output
+        lofiNoiseGain.connect(bitcrusher);
+
+        // Master reverb wet/dry split
+        bitcrusher.connect(reverbDry);
+        bitcrusher.connect(masterReverb);
+        masterReverb.connect(reverbWet);
+
+        reverbDry.connect(compressor);
+        reverbWet.connect(compressor);
         compressor.connect(audioCtx.destination);
 
-        masterGain.gain.value = 0.6;
+        masterGain.gain.value = 1.0;
         console.log("Switched to DREAM mode");
 
     } else if (currentMode === 'glitch') {
-        // GLITCH MODE: masterGain → notch filter → ring mod → bitcrusher → compressor → destination
+        // GLITCH MODE: masterGain → notch filter → ring mod → sample rate reducer → bitcrusher (+noise) → reverb → compressor → destination
         masterGain.connect(notchFilter);
 
         // Ring modulation: multiply signal by oscillator
         notchFilter.connect(ringModGain);
         ringModOsc.connect(ringModGain.gain); // Modulate the gain
 
-        ringModGain.connect(bitcrusher);
-        bitcrusher.connect(compressor);
+        ringModGain.connect(sampleRateReducer);
+        sampleRateReducer.connect(bitcrusher);
+
+        // Add lo-fi noise to the bitcrusher output
+        lofiNoiseGain.connect(bitcrusher);
+
+        // Master reverb wet/dry split
+        bitcrusher.connect(reverbDry);
+        bitcrusher.connect(masterReverb);
+        masterReverb.connect(reverbWet);
+
+        reverbDry.connect(compressor);
+        reverbWet.connect(compressor);
         compressor.connect(audioCtx.destination);
 
         masterGain.gain.value = 0.7;
@@ -564,11 +753,11 @@ function updateColorScheme(mode) {
         root.style.setProperty('--accent-color', '#FFEF77');
         root.style.setProperty('--bg-color', '#262626');
     } else if (mode === 'dream') {
-        // Soft pastel dream colors
-        root.style.setProperty('--primary-color', '#B19CD9');
-        root.style.setProperty('--secondary-color', '#9DD9D2');
-        root.style.setProperty('--accent-color', '#FFD9E8');
-        root.style.setProperty('--bg-color', '#1A1A2E');
+        // Inverse dream colors - white background
+        root.style.setProperty('--primary-color', '#6B4E9C');
+        root.style.setProperty('--secondary-color', '#4E9C8F');
+        root.style.setProperty('--accent-color', '#9C4E6B');
+        root.style.setProperty('--bg-color', '#FFFFFF');
     } else if (mode === 'glitch') {
         // Matrix/cyber glitch colors
         root.style.setProperty('--primary-color', '#00FF00');
@@ -618,11 +807,11 @@ document.querySelectorAll('.freq-button').forEach(button => {
                 baseFreq = 50;
                 break;
             case 'mid':
-                freqMultiplier = 2.5;
+                freqMultiplier = 3;
                 baseFreq = 50;
                 break;
             case 'full':
-                freqMultiplier = 8;
+                freqMultiplier = 10;
                 baseFreq = 50;
                 break;
         }
