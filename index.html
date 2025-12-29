@@ -4,10 +4,35 @@
   <meta charset="UTF-8">
   <title>Thereminometer</title>
   <link href="https://fonts.googleapis.com/css?family=Press+Start+2P|VT323" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./style.css?v=2">
 </head>
 <body>
-  
+
+  <div class="controls" id="controls">
+    <div class="control-item">
+      <p id="oscCount" class="status-text"></p>
+    </div>
+    <div class="control-item">
+      <a href="#" id="addOscillators" class="control-link">+ ADD MORE OSCILLATORS</a>
+    </div>
+    <div class="control-item">
+      <span class="control-label">DISTORTION: <span id="distortionValue">400</span></span>
+      <input type="range" id="distortionSlider" min="0" max="800" value="400" step="10">
+    </div>
+    <div class="control-item">
+      <span class="control-label">OVERSAMPLE: <span id="oversampleValue">2x</span></span>
+      <input type="range" id="oversampleSlider" min="0" max="2" value="1" step="1">
+    </div>
+    <div class="control-item">
+      <span class="control-label">FREQUENCY RANGE:</span>
+      <div class="freq-buttons">
+        <a href="#" class="freq-button active" data-range="low">LOW</a>
+        <a href="#" class="freq-button" data-range="mid">LOW+MID</a>
+        <a href="#" class="freq-button" data-range="full">FULL</a>
+      </div>
+    </div>
+  </div>
+
   <div class="main">
     <h2>THEREMINOMETER</h2>
     <h2>tap on duck to start</h2>
@@ -32,7 +57,8 @@
   <div class="container" style="perspective: 300;">
     <img src="./duck.png" id="imgLogo" class="logo">
   </div>
-    <p>I'm sorry. <a href="https://github.com/adrianmancuso/thereminomometer">>Github Link</a></p>
+
+  <p>I'm sorry. <a href="https://github.com/adrianmancuso/thereminomometer">>Github Link</a></p>
   <script src="./app.js"></script>
 </body>
 </html>

@@ -51,3 +51,167 @@ p{
   position: fixed;
   bottom: 0;
 }
+
+.controls {
+  text-align: center;
+  margin: 10px auto 30px auto;
+  max-width: 600px;
+  padding: 15px;
+  border-bottom: 2px solid #36BBCC;
+  min-height: 150px;
+}
+
+.control-item {
+  margin: 10px auto;
+}
+
+.control-item p {
+  position: static !important;
+  margin: 5px 0;
+}
+
+.control-link {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 1.2rem;
+  color: #FFEF77;
+  text-decoration: none;
+  animation: pulse 5s infinite;
+  cursor: pointer;
+  transition: color 0.3s;
+  display: inline-block;
+}
+
+.control-link:hover {
+  color: #FF5DB1;
+}
+
+.control-item input[type="range"] {
+  margin-top: 5px;
+}
+
+.control-label {
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 0.9rem !important;
+  color: #FFEF77 !important;
+  animation: pulse 5s infinite !important;
+  display: block !important;
+  margin-bottom: 10px !important;
+  text-align: center !important;
+}
+
+.control-label span {
+  color: #9277FF !important;
+}
+
+.control-item input[type="range"] {
+  width: 95%;
+  height: 40px;
+  background: #262626;
+  outline: none;
+  margin: 10px auto;
+  cursor: pointer;
+  border: 3px solid #36BBCC;
+  display: block;
+  position: relative;
+  border-radius: 4px;
+}
+
+.control-item input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 50px;
+  background: #FF5DB1;
+  cursor: pointer;
+  border: 3px solid #FFEF77;
+  box-shadow: 0 0 8px #FF5DB1;
+  border-radius: 4px;
+}
+
+.control-item input[type="range"]::-moz-range-thumb {
+  width: 25px;
+  height: 50px;
+  background: #FF5DB1;
+  cursor: pointer;
+  border: 3px solid #FFEF77;
+  box-shadow: 0 0 8px #FF5DB1;
+  border-radius: 4px;
+}
+
+.freq-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.freq-button {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.7rem;
+  background: #262626;
+  padding: 10px 18px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-block;
+  flex: 1;
+  min-width: 80px;
+}
+
+.freq-button[data-range="low"] {
+  color: #FF5DB1;
+  border: 2px solid #FF5DB1;
+}
+
+.freq-button[data-range="low"]:hover {
+  box-shadow: 0 0 8px #FF5DB1;
+}
+
+.freq-button[data-range="low"].active {
+  color: #262626;
+  background: #FF5DB1;
+  border-color: #FF5DB1;
+  box-shadow: 0 0 12px #FF5DB1;
+}
+
+.freq-button[data-range="mid"] {
+  color: #9277FF;
+  border: 2px solid #9277FF;
+}
+
+.freq-button[data-range="mid"]:hover {
+  box-shadow: 0 0 8px #9277FF;
+}
+
+.freq-button[data-range="mid"].active {
+  color: #262626;
+  background: #9277FF;
+  border-color: #9277FF;
+  box-shadow: 0 0 12px #9277FF;
+}
+
+.freq-button[data-range="full"] {
+  color: #36BBCC;
+  border: 2px solid #36BBCC;
+}
+
+.freq-button[data-range="full"]:hover {
+  box-shadow: 0 0 8px #36BBCC;
+}
+
+.freq-button[data-range="full"].active {
+  color: #262626;
+  background: #36BBCC;
+  border-color: #36BBCC;
+  box-shadow: 0 0 12px #36BBCC;
+}
+
+.status-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.9rem;
+  color: #FFEF77;
+  position: static !important;
+  margin: 15px 0;
+  animation: pulse 5s infinite;
+}
